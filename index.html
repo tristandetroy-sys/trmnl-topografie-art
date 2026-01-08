@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Topografie</title>
+<title>Topographic Lines</title>
 </head>
 <body style="margin:0;background:white;">
 <svg id="svg" width="800" height="480" viewBox="0 0 800 480"
@@ -11,45 +11,48 @@
 <script>
 const svg = document.getElementById("svg");
 
-const blobs = 6;          // Anzahl „Berge“
-const rings = 5;          // Höhenlinien pro Berg
-const baseRadius = 120;
-const noise = 0.25;
+const cx = 400;
+const cy = 240;
 
-function rand(min, max) {
-  return Math.random() * (max - min) + min;
+const rings = 9;            // Anzahl Höhenlinien
+const baseRadius = 180;     // äußerster Radius
+const smoothness = 0.35;    // Formruhe (kleiner = ruhiger)
+const points = 96;          // Rundheit
+
+function height(angle) {
+  // eine EINZIGE glatte Höhenfunktion
+  return (
+    Math.sin(angle * 2) * 0.6 +
+    Math.sin(angle * 3 + 1.2) * 0.3 +
+    Math.sin(angle * 5 - 0.7) * 0.1
+  );
 }
 
-function blobPath(cx, cy, r) {
+for (let r = 0; r < rings; r++) {
+  const radius = baseRadius * (1 - r / (rings + 1));
   let d = "";
-  const steps = 48;
 
-  for (let i = 0; i <= steps; i++) {
-    const a = (i / steps) * Math.PI * 2;
-    const n = r * (1 + rand(-noise, noise));
-    const x = cx + Math.cos(a) * n;
-    const y = cy + Math.sin(a) * n;
+  for (let i = 0; i <= points; i++) {
+    const a = (i / points) * Math.PI * 2;
+    const h = height(a) * smoothness;
+
+    const rr = radius * (1 + h);
+    const x = cx + Math.cos(a) * rr;
+    const y = cy + Math.sin(a) * rr;
+
     d += (i === 0 ? "M" : "L") + x + " " + y;
   }
-  return d + " Z";
-}
 
-for (let b = 0; b < blobs; b++) {
-  const cx = rand(100, 700);
-  const cy = rand(80, 400);
+  d += "Z";
 
-  for (let r = rings; r > 0; r--) {
-    const radius = baseRadius * (r / rings);
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", d);
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", "black");
+  path.setAttribute("stroke-width", "2");
+  path.setAttribute("stroke-linejoin", "round");
 
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", blobPath(cx, cy, radius));
-    path.setAttribute("fill", "none");
-    path.setAttribute("stroke", "black");
-    path.setAttribute("stroke-width", "2");
-    path.setAttribute("stroke-linejoin", "round");
-
-    svg.appendChild(path);
-  }
+  svg.appendChild(path);
 }
 </script>
 </body>
