@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Topografie Generator</title>
+</head>
+<body style="margin:0;background:white;">
+<svg width="800" height="480" viewBox="0 0 800 480"
+     xmlns="http://www.w3.org/2000/svg">
+
+<script>
+const lines = 14;
+const amplitude = 25;
+const spacing = 30;
+
+function rand(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+for (let i = 0; i < lines; i++) {
+  let d = "";
+  const yBase = i * spacing + rand(-10, 10);
+
+  for (let x = 0; x <= 800; x += 20) {
+    const y = yBase + Math.sin((x / 80) + i) * rand(5, amplitude);
+    d += (x === 0 ? "M" : " L") + x + " " + y;
+  }
+
+  document.write(`
+    <path d="${d}"
+          fill="none"
+          stroke="black"
+          stroke-width="3" />
+  `);
+}
+</script>
+
+</svg>
+</body>
+</html>
