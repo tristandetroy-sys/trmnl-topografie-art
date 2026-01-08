@@ -5,10 +5,12 @@
   <title>Topografie Generator</title>
 </head>
 <body style="margin:0;background:white;">
-<svg width="800" height="480" viewBox="0 0 800 480"
-     xmlns="http://www.w3.org/2000/svg">
+<svg id="svg" width="800" height="480" viewBox="0 0 800 480"
+     xmlns="http://www.w3.org/2000/svg"></svg>
 
 <script>
+const svg = document.getElementById("svg");
+
 const lines = 14;
 const amplitude = 25;
 const spacing = 30;
@@ -26,15 +28,14 @@ for (let i = 0; i < lines; i++) {
     d += (x === 0 ? "M" : " L") + x + " " + y;
   }
 
-  document.write(`
-    <path d="${d}"
-          fill="none"
-          stroke="black"
-          stroke-width="3" />
-  `);
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", d);
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", "black");
+  path.setAttribute("stroke-width", "3");
+
+  svg.appendChild(path);
 }
 </script>
-
-</svg>
 </body>
 </html>
