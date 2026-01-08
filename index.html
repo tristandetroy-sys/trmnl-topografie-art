@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Topografie Isolinien</title>
+<meta charset="UTF-8">
+<title>Topografie</title>
 </head>
 <body style="margin:0;background:white;">
 <svg id="svg" width="800" height="480" viewBox="0 0 800 480"
@@ -11,73 +11,45 @@
 <script>
 const svg = document.getElementById("svg");
 
-const width = 800;
-const height = 480;
-const cell = 20;          // Auflösung des Höhenfelds
-const levels = 7;         // Anzahl Höhenlinien
-const noiseScale = 0.08;  // „Zoom“ der Landschaft
+const blobs = 6;          // Anzahl „Berge“
+const rings = 5;          // Höhenlinien pro Berg
+const baseRadius = 120;
+const noise = 0.25;
 
-// Einfacher, weicher 2D-Noise
-function noise(x, y) {
-  return Math.sin(x * noiseScale) +
-         Math.sin(y * noiseScale) +
-         Math.sin((x + y) * noiseScale * 0.7);
+function rand(min, max) {
+  return Math.random() * (max - min) + min;
 }
 
-// Höhenfeld berechnen
-let field = [];
-for (let y = 0; y <= height; y += cell) {
-  let row = [];
-  for (let x = 0; x <= width; x += cell) {
-    row.push(noise(x, y));
-  }
-  field.push(row);
-}
-
-// Marching-Squares-ähnliche Konturen (vereinfacht)
-function drawContour(level) {
+function blobPath(cx, cy, r) {
   let d = "";
+  const steps = 48;
 
-  for (let y = 0; y < field.length - 1; y++) {
-    for (let x = 0; x < field[0].length - 1; x++) {
-
-      let a = field[y][x] > level;
-      let b = field[y][x+1] > level;
-      let c = field[y+1][x+1] > level;
-      let d2 = field[y+1][x] > level;
-
-      let px = x * cell;
-      let py = y * cell;
-
-      if (a !== b) {
-        d += `M ${px + cell/2} ${py} l 0 ${cell} `;
-      }
-      if (b !== c) {
-        d += `M ${px + cell} ${py + cell/2} l ${-cell} 0 `;
-      }
-      if (c !== d2) {
-        d += `M ${px + cell/2} ${py + cell} l 0 ${-cell} `;
-      }
-      if (d2 !== a) {
-        d += `M ${px} ${py + cell/2} l ${cell} 0 `;
-      }
-    }
+  for (let i = 0; i <= steps; i++) {
+    const a = (i / steps) * Math.PI * 2;
+    const n = r * (1 + rand(-noise, noise));
+    const x = cx + Math.cos(a) * n;
+    const y = cy + Math.sin(a) * n;
+    d += (i === 0 ? "M" : "L") + x + " " + y;
   }
-
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("d", d);
-  path.setAttribute("fill", "none");
-  path.setAttribute("stroke", "black");
-  path.setAttribute("stroke-width", "2");
-  path.setAttribute("stroke-linecap", "round");
-  path.setAttribute("stroke-linejoin", "round");
-
-  svg.appendChild(path);
+  return d + " Z";
 }
 
-// Mehrere Höhenstufen zeichnen
-for (let i = 0; i < levels; i++) {
-  drawContour(-2 + i * 0.6);
+for (let b = 0; b < blobs; b++) {
+  const cx = rand(100, 700);
+  const cy = rand(80, 400);
+
+  for (let r = rings; r > 0; r--) {
+    const radius = baseRadius * (r / rings);
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", blobPath(cx, cy, radius));
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "black");
+    path.setAttribute("stroke-width", "2");
+    path.setAttribute("stroke-linejoin", "round");
+
+    svg.appendChild(path);
+  }
 }
 </script>
 </body>
